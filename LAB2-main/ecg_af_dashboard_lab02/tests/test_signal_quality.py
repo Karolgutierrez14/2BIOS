@@ -67,3 +67,28 @@ def test_quality_mask_marks_flatline_as_invalid():
     assert spans
     assert spans[0][0] <= 250
     assert spans[0][1] >= 750
+def test_quality_mask_marks_flatline_as_invalid():
+    fs = 250.0
+
+    signal = np.sin(
+        2 * np.pi * 1.0 * np.arange(1000) / fs
+    )
+
+    # Línea plana de dos segundos.
+    signal[250:750] = 0.0
+
+    mask = build_quality_mask(
+        signal,
+        sampling_rate=fs,
+        max_flat_duration_s=1.2,
+    )
+
+    assert mask.dtype == bool
+    assert mask.shape == signal.shape
+    assert not np.all(mask[250:750])
+
+    spans = invalid_mask_to_spans(mask)
+
+    assert spans
+    assert spans[0][0] <= 250
+    assert spans[0][1] >= 750
