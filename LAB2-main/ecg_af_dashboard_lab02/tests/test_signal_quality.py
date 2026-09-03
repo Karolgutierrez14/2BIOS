@@ -1,6 +1,10 @@
 import numpy as np
 
-from ecg_af_dashboard.quality import evaluate_signal_quality
+from ecg_af_dashboard.quality import (
+    build_quality_mask,
+    evaluate_signal_quality,
+    invalid_mask_to_spans,
+)
 
 
 def test_signal_quality_ok():
