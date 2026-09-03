@@ -26,7 +26,12 @@ from ecg_af_dashboard.io import ECGRecord, load_afdb_record
 from ecg_af_dashboard.preprocessing import bandpass_zero_phase
 from ecg_af_dashboard.qrs import detect_qrs_xqrs
 from ecg_af_dashboard.qrs_control import control_qrs_detections
-from ecg_af_dashboard.quality import QualityAssessment, evaluate_signal_quality
+from ecg_af_dashboard.quality import (
+    QualityAssessment,
+    build_quality_mask,
+    evaluate_signal_quality,
+    invalid_mask_to_spans,
+)
 from ecg_af_dashboard.rr import RRBuildResult, build_rr_intervals
 
 CLINICAL_DISCLAIMER = (
