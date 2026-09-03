@@ -98,7 +98,12 @@ st.caption(
 # ── Descriptores ───────────────────────────────────────────────────────────
 
 st.subheader("Descriptores de irregularidad")
-
+if not analysis.quality.is_acceptable:
+    st.error(
+        "La calidad de esta ventana es insuficiente para presentar "
+        "descriptores RR. Revise el ECG y seleccione otra ventana."
+    )
+    st.stop()
 summaries = summarize_by_rhythm(result, min_rr)
 rows = []
 for label, summary in summaries.items():
