@@ -129,3 +129,96 @@ def evaluate_signal_quality(
         out_of_range_prop=out_of_range_prop,
         has_flatline=has_flatline,
     )
+def build_quality_mask(
+    signal: np.ndarray,
+    sampling_rate: float,
+    min_mv: float = -5.0,
+    max_mv: float = 5.0,
+    max_flat_duration_s: float = 1.2,
+    tol: float = 1e-6,
+) -> np.ndarray:
+    """Construye una máscara por muestra: True significa muestra utilizable."""
+    signal = np.asarray(signal, dtype=float)
+
+    if signal.ndim != 1:
+        raise ValueError("La señal debe ser un vector unidimensional.")
+
+    if not np.isfinite(sampling_rate) or sampling_rate <= 0:
+        raise ValueError(
+            "La frecuencia de muestreo debe ser finita y positiva."
+        )
+
+    if min_mv >= max_mv:
+        raise ValueError(
+            "El límite mínimo debe ser menor que el máximo."
+        )
+
+    if not np.isfinite(max_flat_duration_s) or max_flat_duration_s <= 0:
+        raise ValueError(
+            "La duración máxima de línea plana debe ser positiva."
+        )
+
+    mask = (
+        np.isfinite(signal)
+        & (signal >= min_mv)
+        & (signal <= max_mv)
+    )
+
+    if signal.size < 2:
+        return mask
+
+    finite_pairs = (
+        np.isfinite(signal[:-1])
+        & np.isfinite(signal[1:])
+    )
+    flat_differences = (
+        finite_pairs
+        & (np.abs(np.diff(signal)) < tol)
+    )
+
+    minimum_run = max(
+        1,
+        int(np.ceil(max_flat_duration_s * sampling_rate)),
+    )
+
+    padded = np.concatenate(
+        ([False], flat_differences, [False])
+    )
+    changes = np.diff(padded.astype(np.int8))
+
+    starts = np.flatnonzero(changes == 1)
+    ends = np.flatnonzero(changes == -1)
+
+    for start, end in zip(starts, ends, strict=True):
+        if end - start >= minimum_run:
+            mask[start : end + 1] = False
+
+    return mask
+
+
+def invalid_mask_to_spans(
+    quality_mask: np.ndarray,
+    offset: int = 0,
+) -> list[tuple[int, int]]:
+    """Convierte regiones False en intervalos [inicio, fin)."""
+    quality_mask = np.asarray(quality_mask, dtype=bool)
+
+    if quality_mask.ndim != 1:
+        raise ValueError(
+            "La máscara de calidad debe ser unidimensional."
+        )
+
+    invalid = ~quality_mask
+    padded = np.concatenate(([False], invalid, [False]))
+    changes = np.diff(padded.astype(np.int8))
+
+    starts = np.flatnonzero(changes == 1)
+    ends = np.flatnonzero(changes == -1)
+
+    return [
+        (
+            int(start) + int(offset),
+            int(end) + int(offset),
+        )
+        for start, end in zip(starts, ends, strict=True)
+    ]
