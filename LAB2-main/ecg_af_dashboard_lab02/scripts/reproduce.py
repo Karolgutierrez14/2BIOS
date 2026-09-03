@@ -50,7 +50,7 @@ def main() -> int:
     with open(params_path, "w", encoding="utf-8") as f:
         # Serializar los parámetros globales definidos en config
         json.dump(
-            PARAMETERS.model_dump() if hasattr(PARAMETERS, "model_dump") else {},
+            PARAMETERS.to_dict(),
             f,
             indent=2,
         )
