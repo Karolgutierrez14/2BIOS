@@ -33,7 +33,7 @@ from ecg_af_dashboard.quality import (
     invalid_mask_to_spans,
 )
 from ecg_af_dashboard.rr import RRBuildResult, build_rr_intervals
-
+from ecg_af_dashboard.validation import validate_ecg_record
 CLINICAL_DISCLAIMER = (
     "Prototipo académico de exploración de registros previamente anotados. "
     "No diagnostica fibrilación auricular, no estima riesgo individual y no "
@@ -108,7 +108,9 @@ def load_record_cached(
 ) -> ECGRecord:
     """Invalida la caché cuando cambia el encabezado del registro."""
     del header_modified_ns
-    return load_afdb_record(Path(directory_text), record_id)
+    record = load_afdb_record(Path(directory_text), record_id)
+    validate_ecg_record(record)
+    return record
 
 
 @st.cache_data(show_spinner="Reconstruyendo intervalos de ritmo…")
