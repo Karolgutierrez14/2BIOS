@@ -180,9 +180,18 @@ def analyze_window_cached(
     if processed is not None:
         try:
             peaks = detect_qrs_xqrs(processed, fs)
-            control = control_qrs_detections(peaks, raw.size, fs, min_rr_ms=min_rr_ms)
+
+            control = control_qrs_detections(
+                peak_indices=peaks,
+                signal_length=raw.size,
+                sampling_frequency_hz=fs,
+                min_rr_ms=min_rr_ms,
+                quality_mask=quality_mask_local,
+            )
+
             qrs_local = np.asarray(control.valid_indices, dtype=int)
             qrs_counts = dict(control.counts)
+
         except ValueError as error:
             filter_error = filter_error or str(error)
 
