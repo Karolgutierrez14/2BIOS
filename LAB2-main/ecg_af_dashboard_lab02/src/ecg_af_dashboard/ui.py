@@ -165,7 +165,10 @@ def analyze_window_cached(
         max_mv=quality_params.physiological_max_mv,
         max_flat_duration_s=quality_params.max_flat_duration_s,
     )
-    
+    excluded_spans_global = invalid_mask_to_spans(
+        quality_mask_local,
+        offset=start_sample,
+    )
 
     processed: np.ndarray | None = None
     filter_error: str | None = None
