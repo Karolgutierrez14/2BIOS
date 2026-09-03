@@ -68,7 +68,7 @@ class WindowAnalysis:
 
 # ── Descubrimiento de registros ────────────────────────────────────────────
 
-
+quality_params = PARAMETERS.quality
 def list_record_ids(directory: Path | None = None) -> list[str]:
     """Registros con encabezado WFDB disponibles en la carpeta de datos."""
     folder = Path(directory) if directory is not None else RAW_DIR
@@ -150,7 +150,13 @@ def analyze_window_cached(
     fs = record.sampling_frequency_hz
     raw = np.asarray(record.signal[start_sample:end_sample, channel_index], dtype=float)
 
-    #quality = evaluate_signal_quality(raw, fs);
+    quality = evaluate_signal_quality(
+        raw,
+        fs,
+        max_non_finite_prop=quality_params.max_non_finite_prop,
+        max_out_of_range_prop=quality_params.max_out_of_range_prop,
+        max_flat_duration_sec=quality_params.max_flat_duration_s,
+    )
 
     quality_mask_local = build_quality_mask(
         raw,
@@ -160,13 +166,7 @@ def analyze_window_cached(
         max_flat_duration_s=quality_params.max_flat_duration_s,
     )
     
-    control = control_qrs_detections(
-        peaks,
-        raw.size,
-        fs,
-        min_rr_ms=min_rr_ms,
-        quality_mask=quality_mask_local,
-    )
+
     processed: np.ndarray | None = None
     filter_error: str | None = None
     qrs_local = np.array([], dtype=int)
