@@ -14,7 +14,7 @@ def control_qrs_detections(
     signal_length: int,
     sampling_frequency_hz: float,
     min_rr_ms: float = 200.0,
-    quality_mask: np.ndarray = None,
+    quality_mask: np.ndarray | None = None,
 ) -> QRSControlResult:
     """Aplica filtros de control de calidad, límites y fisiología sobre los picos
     QRS."""
@@ -42,14 +42,16 @@ def control_qrs_detections(
     min_samples_between_peaks = int((min_rr_ms / 1000.0) * sampling_frequency_hz)
 
     last_accepted = -999999
-    if quality_mask is not None:
-    quality_mask = np.asarray(quality_mask, dtype=bool)
 
-    if quality_mask.shape != (signal_length,):
-        raise ValueError(
-            "La máscara de calidad debe tener una entrada "
-            "por cada muestra de la señal."
-        )
+    if quality_mask is not None:
+        quality_mask = np.asarray(quality_mask, dtype=bool)
+
+        if quality_mask.shape != (signal_length,):
+            raise ValueError(
+                "La máscara de calidad debe tener una entrada "
+                "por cada muestra de la señal."
+            )
+
     for p in peaks:
         # 2. Marcas dentro de los límites de la señal
         if p < 0 or p >= signal_length:
