@@ -194,7 +194,6 @@ def analyze_window_cached(
 
         except ValueError as error:
             filter_error = filter_error or str(error)
-
     quality_mask_global = np.ones(record.signal.shape[0], dtype=bool)
 
     quality_mask_global[start_sample:end_sample] = quality_mask_local
