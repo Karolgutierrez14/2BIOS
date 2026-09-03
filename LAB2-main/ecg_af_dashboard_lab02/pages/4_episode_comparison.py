@@ -155,7 +155,21 @@ af_window = centered_window(af_interval)
 other_window = centered_window(other_interval)
 af_analysis = analyze(af_window)
 other_analysis = analyze(other_window)
+invalid_quality = []
 
+if not af_analysis.quality.is_acceptable:
+    invalid_quality.append("FA anotada")
+
+if not other_analysis.quality.is_acceptable:
+    invalid_quality.append("No-FA anotado")
+
+if invalid_quality:
+    st.error(
+        "Comparación invalidada por calidad insuficiente en: "
+        + ", ".join(invalid_quality)
+        + ". Seleccione ventanas con calidad comparable."
+    )
+    st.stop()
 # ── Resultado de la comparación ────────────────────────────────────────────
 
 comparison_rows = []
